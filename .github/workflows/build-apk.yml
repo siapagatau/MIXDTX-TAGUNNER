@@ -1,0 +1,75 @@
+name: Build Debug APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # android-actions/setup-android@v3 DIHAPUS: action ini coba download
+      # ulang SDK command-line tools versi baru dan macet nunggu konfirmasi lisensi.
+      # Runner ubuntu-latest sudah punya Android SDK terpasang bawaan (licenses
+      # sudah accepted) -> cukup pastikan sdkmanager-nya ada di PATH.
+      - name: Add Android SDK cmdline-tools to PATH
+        run: echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+      # Sekarang install platform/build-tools 36 (Android 16), sesuai
+      # compileSdk/targetSdk yang sudah dinaikkan di app/build.gradle.kts.
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
+
+      - name: Install NDK & CMake
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358" "cmake;3.22.1"
+
+      # AGP 9.1.0 minimal butuh Gradle 9.2.1.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.3.1
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace
+
+      # Verifikasi 16 KB page size (syarat Google Play), sama seperti APK DTX.
+      - name: Verify 16 KB page size alignment
+        run: |
+          set -e
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          READELF="$(ls -d $ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/*/bin)/llvm-readelf"
+          fail=0
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          rm -rf /tmp/apkx && mkdir /tmp/apkx && unzip -q "$APK" 'lib/*' -d /tmp/apkx
+          for so in /tmp/apkx/lib/arm64-v8a/*.so /tmp/apkx/lib/x86_64/*.so; do
+            minalign=$("$READELF" -lW "$so" | awk '$1=="LOAD"{print $NF}' | sort -n | head -1)
+            if [ $((minalign)) -ge 16384 ]; then echo "OK        $so (align $minalign)"; else echo "UNALIGNED $so (align $minalign)"; fail=1; fi
+          done
+          "$BT/zipalign" -c -P 16 -v 4 "$APK" | tail -1
+          exit $fail
+
+      - name: Upload build reports (saat gagal)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            app/build/reports
+            app/build/outputs/logs
+          if-no-files-found: ignore
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-mixjos-debug
+          path: app/build/outputs/apk/debug/app-debug.apk

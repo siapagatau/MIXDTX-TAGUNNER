@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Wajib buat nangkep suara dari mic clip -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Unduh skin dari repo SKIN-MIXER-HP (SkinRepository). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Biar Android tau HP ini punya/gak punya jalur low-latency & pro audio,
+         "required=false" supaya app tetep bisa diinstall di HP yang gak punya
+         fitur ini (cuma performanya gak sebagus HP yang support). -->
+    <uses-feature android:name="android.hardware.audio.low_latency" android:required="false" />
+    <uses-feature android:name="android.hardware.audio.pro" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="true" />
+
+    <!-- Buat panel FLOATING (bisa muncul di atas app lain) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Panel floating harus jalan lewat foreground service supaya Android
+         gak matiin akses mic pas MainActivity gak lagi di depan (user lagi
+         buka app lain sambil nyanyi). Ini TERPISAH dari AudioEngine/native -
+         cuma soal "izin nyala di background", gak nyentuh jalur audio
+         sama sekali jadi gak nambah delay. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- Buat nampilin notifikasi wajib foreground service di Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- EQ Audio global (suara YouTube/TikTok/musik): efek DynamicsProcessing
+         dipasang di output mix, butuh izin ini (otomatis, bukan izin runtime). -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- Service EQ Audio jalan di foreground biar efeknya gak ikut mati pas
+         app di-background. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- Reverb Audio (SysReverbService): menangkap audio app lain lewat MediaProjection + AudioPlaybackCapture
+         (Android 10+). Izin rekam layar diminta lewat dialog sistem tiap kali dinyalakan. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/Theme.RealPads"
+        android:largeHeap="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.RealPads">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Service buat panel floating (bisa di-resize + minimize jadi
+             bulatan). foregroundServiceType="microphone" WAJIB ada karena
+             service ini yang megang on/off jalur mic->speaker pas app lagi
+             di-background (lihat komentar permission di atas). -->
+        <service
+            android:name=".FloatingWindowService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <!-- Service pemegang efek EQ Audio global (lihat GlobalEqEngine.kt). -->
+        <service
+            android:name=".GlobalEqService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- Service Reverb Audio: capture audio sistem -> reverb/echo manual (C++) -> putar efeknya. -->
+        <service
+            android:name=".SysReverbService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+    </application>
+</manifest>

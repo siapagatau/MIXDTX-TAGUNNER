@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/panel_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_floating_panel">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp">
+
+        <!-- Header: seluruh area ini bisa dipegang buat menggeser panel -->
+        <LinearLayout
+            android:id="@+id/title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_grip" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="MIXJOS"
+                android:textColor="#FFFFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/btn_minimize"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/bg_btn_round"
+                android:clickable="true"
+                android:contentDescription="Minimize"
+                android:focusable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_minimize" />
+
+            <ImageView
+                android:id="@+id/btn_close"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_btn_round"
+                android:clickable="true"
+                android:contentDescription="Tutup"
+                android:focusable="true"
+                android:padding="9dp"
+                android:src="@drawable/ic_close" />
+        </LinearLayout>
+
+        <!-- Isi: Compose, SAMA dengan layar utama APK (MixerGrid) -->
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_host"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight="1" />
+
+        <!-- Baris bawah: zoom skin di tengah, pegangan resize (pojok kanan-bawah) di kanan.
+             Semuanya di barisnya sendiri supaya tidak menutupi knob. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Mode equalizer: bagian EQUALIZER 31 BAND menyambung di bawah mixer. Hijau saat aktif. -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/btn_eq_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@drawable/bg_pill"
+                    android:clickable="true"
+                    android:contentDescription="Mode equalizer"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="44dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="EQ"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Mode kompresor: bagian KOMPRESOR di atas equalizer. Hijau saat aktif. -->
+                <TextView
+                    android:id="@+id/btn_comp_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="52dp"
+                    android:background="@drawable/bg_pill"
+                    android:clickable="true"
+                    android:contentDescription="Mode kompresor"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="44dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="KOMP"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Mode FX (gaya taGunner): bagian FX di bawah kompresor. Hijau saat aktif. -->
+                <TextView
+                    android:id="@+id/btn_fx_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="104dp"
+                    android:background="@drawable/bg_pill"
+                    android:clickable="true"
+                    android:contentDescription="Mode FX"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minWidth="44dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="FX"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/zoom_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_pill"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/btn_zoom_out"
+                    android:layout_width="28dp"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:contentDescription="Perkecil"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="−"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_zoom_reset"
+                    android:layout_width="38dp"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:contentDescription="Zoom ke ukuran asli"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="1×"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_zoom_in"
+                    android:layout_width="28dp"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:contentDescription="Perbesar"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="+"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/resize_handle"
+                android:layout_gravity="end"
+                android:layout_width="48dp"
+                android:layout_height="28dp"
+                android:contentDescription="Ubah ukuran"
+                android:paddingStart="16dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="4dp"
+                android:src="@drawable/ic_resize" />
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

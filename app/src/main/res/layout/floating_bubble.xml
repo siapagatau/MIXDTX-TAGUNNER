@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ukuran 64dp harus sama dengan BUBBLE_DP di FloatingWindowService -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bubble_root"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
+    android:background="@drawable/bg_bubble_off">
+
+    <ImageView
+        android:id="@+id/bubble_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:contentDescription="Buka panel"
+        android:src="@drawable/ic_mic" />
+
+</FrameLayout>
